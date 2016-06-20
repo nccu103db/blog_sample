@@ -1,6 +1,7 @@
 //這是一個Member Model
 var db = require('../libs/db'); //引入我們的sql builder
 var GeneralErrors = require('../errors/GeneralErrors');
+var thunkify = require('thunkify');
 
 var Member = function(options) {
   this.id = options.id;
@@ -10,7 +11,7 @@ var Member = function(options) {
 };
 
 //Class Function
-Member.get = function(memberId, cb) {
+Member.get = thunkify(function(memberId, cb) {
   //這邊是當傳入一個memberId時，進入資料庫查出相對應的member資料
   db.select()
     .from('member')
@@ -32,7 +33,7 @@ Member.get = function(memberId, cb) {
     .catch(function(err) {
       cb(err);
     })
-}
+});
 
 //我們接下來嘗試是否可以正確取得資料
 //接下來完成其他會用到的function

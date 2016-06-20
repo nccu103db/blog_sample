@@ -3,15 +3,21 @@ var router = express.Router();
 var Member = require('../models/Member');
 var Article = require('../models/Article');
 var async = require('async');
+var thunkify = require('thunkify');
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  Article.getAll(function(err, articleList) {
+  var getAllArticles = thunkify(Article.getAll);
+  var getMember = Member.get;
+
+  getAllArticles()(function(err, articleList) {
     if(err) {
       next();
     } else {
-      //這邊的做法是使用async each這樣的方式幫我們從articleList中一筆筆去找到member，然後新增一個key叫member在article物件中
+
       async.each(articleList, function(article, cb) {
-        Member.get(article.memberId, function(err, member) {
+        var a = getMember(article.memberId);
+
+        a(function(err, member) {
           if(err) {
             cb(err);
           } else {
@@ -19,6 +25,7 @@ router.get('/', function(req, res, next) {
             cb(null);
           }
         });
+        
       }, function(err){
         if(err) {
           res.status = err.code;
